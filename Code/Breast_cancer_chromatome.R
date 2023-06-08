@@ -4,7 +4,7 @@ library("pRolocdata");library(stringr);library(tibble);library(DEP);library(ggpl
 output_folder = here::here('Output')
 Hyperlopit_2018 = readr::read_tsv(here::here("Datasets","Processed","annot_hyperlopit.tsv"))
 MS_data = openxlsx::read.xlsx(here::here('Datasets','Raw','MS protein ungrouped mean values.xlsx')) |> 
-    dplyr::select(Accession,matches('Normalized')) |> tibble::column_to_rownames('Accession') |> as.matrix()
+    dplyr::select(Accession,matches('^Abundance:\\.')) |> tibble::column_to_rownames('Accession') |> as.matrix()
 names_MS_data = MS_data |> 
     colnames() |>
     stringr::str_extract(',\\.([:print:]{3,5})$') |> 
@@ -43,10 +43,10 @@ input_matrix =MS_data %>% as.data.frame()
     pdf(here::here(output_folder,glue::glue("Protein_Missingness ",dataset_name,".pdf")), width = 10, height = 10) 
     plot_missval(data_filt)
     dev.off()
-    data_norm=data_filt
-    # data_norm <- normalize_vsn(data_filt)
-    # data_norm@assays@data@listData[[1]] <-  proDA::median_normalization(data_norm@assays@data@listData[[1]])
-    data_norm@assays@data@listData[[1]] <-  DEqMS::equalMedianNormalization(data_norm@assays@data@listData[[1]])
+    # data_norm=data_filt
+    data_norm <- normalize_vsn(data_filt)
+    data_norm@assays@data@listData[[1]] <-  proDA::median_normalization(data_norm@assays@data@listData[[1]])
+    # data_norm@assays@data@listData[[1]] <-  DEqMS::equalMedianNormalization(data_norm@assays@data@listData[[1]])
     
    
     
@@ -58,8 +58,7 @@ input_matrix =MS_data %>% as.data.frame()
     ggsave(here::here(output_folder,glue::glue("Protein_normalisation ",dataset_name,".pdf")))
     
     
-    
-    if(data_norm@assays@data@listData[[1]] %>% is.na() %>% any()){
+    dev.off()
         png(here::here(output_folder,glue::glue("Protein_Missingness_Abundance ",dataset_name,".pdf")), width = 2500, height = 3800,res  =300) 
         plot_detect(data_norm)
         dev.off()
@@ -73,7 +72,8 @@ input_matrix =MS_data %>% as.data.frame()
         rownames(multiple_imputation) <- rownames(data_norm@assays@data@listData[[1]])
         colnames(multiple_imputation) <- colnames(data_norm@assays@data@listData[[1]])
         data_imp@assays@data@listData[[1]] <- multiple_imputation#  rbind(to_not_impute,multiple_imputation)
-        data_imp@assays@data@listData[[1]] <- data_imp@assays@data@listData[[1]][rownames(data_norm@assays@data@listData[[1]]),]}
+        data_imp@assays@data@listData[[1]] <- data_imp@assays@data@listData[[1]][rownames(data_norm@assays@data@listData[[1]]),]
+        
     plot_imputation(data_norm, data_imp)
     ggsave(here::here(output_folder,glue::glue("Protein_imputted ",dataset_name,".pdf")))
     pca_res <- prcomp(data_imp@assays@data@listData[[1]]  %>% na.omit() %>% t(), scale=FALSE)
@@ -98,113 +98,6 @@ input_matrix =MS_data %>% as.data.frame()
     dep <- add_rejections(data_diff_all_contrasts, alpha = 0.05, lfc = 1)
     
  
-    # data_imp@assays@data@listData[[1]] %>%
-    #     as.data.frame() %>%
-    #     rownames_to_column("ProteinGroup") %>%
-    #     mutate(Uniprot= ProteinGroup %>% str_remove_all(";[:graph:]*$") %>% str_remove_all("-[:graph:]*$")) %>%
-    #     left_join(HUMAN_9606 %>% subset(Type == "Gene_Name") %>% dplyr::select(-Type) %>% subset(!duplicated(Uniprot))) %>%
-    #     pivot_longer(contains("_"), names_to = "Condition", values_to = "Abundance") %>%
-    #     mutate(Condition= factor(Condition)) %>%
-    #     group_by(ProteinGroup) %>% pivot_wider(names_from = "Condition",values_from = Abundance) %>%
-    #     mutate(DMSO = mean(c_across(contains("dmso")), na.rm = T)) %>%
-    #     mutate(across(where(is.numeric), ~.x-DMSO)) %>%
-    #     dplyr::select(-DMSO) %>% pivot_longer(contains("_"), names_to = "Condition", values_to = "Abundance") %>%
-    #     left_join(dep@elementMetadata$significant %>% set_names(dep@elementMetadata$name) %>% enframe(name = "ProteinGroup", "Significant")) %>%
-    #     ggplot(aes(x = Condition, y  = Abundance, colour = ProteinGroup,group= ProteinGroup, label = ID, alpha= Significant))+
-    #     geom_line()+
-    #     geom_point()+
-    #     scale_alpha_manual(values = c(0.3,1))+
-    #     ggrepel::geom_label_repel(data = . %>% subset(Condition == tail(experimental_design_DDA$label,1) & Significant == T))+
-    #     ggrepel::geom_label_repel(data = . %>% subset(Condition == tail(experimental_design_DDA$label,1) & Significant == F))+
-    #     theme(legend.position = "none") +
-    #     facet_wrap("Behaviour")+
-    #     scale_x_discrete(guide = guide_axis(n.dodge = 2))+
-    #     ggtitle("Interesting DDR proteins Detected",
-    #             "Significant - opaque, non-significant Transparent")
-    # ggsave(here::here(output_folder,glue::glue("Known_Behaviour ",dataset_name,".pdf")), width = 20, height = 20)
-    # data_norm@assays@data@listData[[1]] %>%
-    #     as.data.frame() %>%
-    #     rownames_to_column("ProteinGroup") %>%
-    #     mutate(Uniprot= ProteinGroup %>% str_remove_all(";[:graph:]*$") %>% str_remove_all("-[:graph:]*$")) %>%
-    #     left_join(HUMAN_9606 %>% subset(Type == "Gene_Name") %>% dplyr::select(-Type) %>% subset(!duplicated(Uniprot))) %>%
-    #     pivot_longer(contains("_"), names_to = "Condition", values_to = "Abundance") %>%
-    #     mutate(Condition= factor(Condition)) %>%
-    #     group_by(ProteinGroup) %>% pivot_wider(names_from = "Condition",values_from = Abundance) %>%
-    #     mutate(Samples_median = median(c_across(where(is.numeric)), na.rm = T)) %>%
-    #     mutate(across(where(is.numeric), ~.x-Samples_median)) %>%
-    #     dplyr::select(-Samples_median) %>% pivot_longer(contains("_"), names_to = "Condition", values_to = "Abundance") %>%
-    #     left_join(dep@elementMetadata$significant %>% set_names(dep@elementMetadata$name) %>% enframe(name = "ProteinGroup", "Significant")) %>%
-    #     subset(Significant == T) %>%
-    #     ggplot(aes(x = Condition, y  = Abundance, colour = ProteinGroup,group= ProteinGroup, label = ID))+
-    #     #geom_line()+
-    #     geom_point()+
-    #     #scale_alpha_manual(values = c(0.3,1))+
-    #     #ggrepel::geom_label_repel(data = . %>% subset(Condition == tail(experimental_design_DDA$label,1) & Significant == T))+
-    #     #ggrepel::geom_label_repel(data = . %>% subset(Condition == tail(experimental_design_DDA$label,1) & Significant == F))+
-    #     theme(legend.position = "none") +
-    #     facet_wrap("ID")+
-    #     scale_x_discrete(guide = guide_axis(n.dodge = 2))+
-    #     ggtitle(glue::glue("Significant - Proteins",dataset_name))
-    # ggsave(here::here(output_folder,glue::glue("Significant_proteins ",dataset_name,".pdf")), width = 20, height = 20)
-    Significant_protein_list <- data.frame(ProteinGroup = dep@elementMetadata$name,
-                                           MCF7_231 = dep@elementMetadata$Abundance_MCF7_vs_Abundance_231_significant,
-                                           T47D_231 = dep@elementMetadata$Abundance_T47D_vs_Abundance_231_significant,
-                                           SKBR3_231 = dep@elementMetadata$Abundance_SKBR3_vs_Abundance_231_significant,
-                                           BT474_231 = dep@elementMetadata$Abundance_BT474_vs_Abundance_231_significant) %>%
-        mutate(Uniprot= ProteinGroup %>% str_remove_all(";[:graph:]*$") %>% str_remove_all("-[:graph:]*$")) %>%
-        left_join(HUMAN_9606 %>% subset(Type == "Gene_Name") %>% dplyr::select(-Type) %>% subset(!duplicated(Uniprot)))
-
-    
-    Significant_proteins <- data_imp@assays@data@listData[[1]] %>% 
-        as.data.frame() %>% 
-        rownames_to_column("ProteinGroup") %>% 
-        #mutate(Uniprot= ProteinGroup %>% str_remove_all(";[:graph:]*$") %>% str_remove_all("-[:graph:]*$")) %>% 
-        #left_join(HUMAN_9606 %>% subset(Type == "Gene_Name") %>% dplyr::select(-Type) %>% subset(!duplicated(Uniprot))) %>% 
-        #left_join(Interesting_proteins) %>% 
-        #subset(!is.na(Behaviour)) %>% 
-        #pivot_longer(contains("_"), names_to = "Condition", values_to = "Abundance") %>% 
-        #mutate(Condition= factor(Condition, levels= paste(rep(c("DMSO","T0","T24"), each= 3), rep(1:3,3),sep="_"))) %>% 
-        #group_by(ProteinGroup) %>% pivot_wider(names_from = "Condition",values_from = Abundance) %>% 
-        #mutate(DMSO = mean(c(DMSO_1,DMSO_2,DMSO_3))) %>% mutate(across(where(is.numeric), ~.x-DMSO)) %>%
-        #dplyr::select(-DMSO) %>% pivot_longer(contains("_"), names_to = "Condition", values_to = "Abundance") %>% 
-        left_join(dep@elementMetadata$significant %>% set_names(dep@elementMetadata$name) %>% enframe(name = "ProteinGroup", "Significant")) %>% 
-        subset(Significant == T) %>% dplyr::select(-Significant) %>% 
-        pivot_longer(contains("_"), names_to = "Condition", values_to = "Abundance") %>% 
-        #   mutate(Condition = str_remove_all(Condition,"_.")) %>% 
-        # ungroup() %>% 
-        #   group_by(ProteinGroup,Condition) %>% 
-        # dplyr::summarise(Mean_Abundance = mean(Abundance, na.rm = T)) %>% 
-        pivot_wider(names_from = "Condition",values_from = "Abundance") %>% 
-        mutate(Uniprot= ProteinGroup %>% str_remove_all(";[:graph:]*$") %>% str_remove_all("-[:graph:]*$")) %>% 
-        left_join(HUMAN_9606 %>% subset(Type == "Gene_Name") %>% dplyr::select(-Type) %>% subset(!duplicated(Uniprot))) %>% 
-        #mutate(duplicated = BiocGenerics::duplicated(Uniprot))
-        ungroup %>% 
-        subset(!is.na(ID)) %>% 
-        mutate(ID = if_else(duplicated(ID),paste0(ID,"_1"),ID)) %>% 
-        mutate(ID = if_else(duplicated(ID),paste0(ID,"_1"),ID)) %>% 
-        mutate(ID = if_else(duplicated(ID),paste0(ID,"_1"),ID)) %>% 
-        
-        
-        column_to_rownames("ID") %>%
-        dplyr::select(where(is.numeric)) %>%
-        mutate(Rowmean = rowMeans(.),
-               across(where(is.numeric),~.x- Rowmean)) %>% 
-        dplyr::select(-Rowmean) %>% 
-        as.matrix() 
-    paletteLength <- 20
-    myColor <- colorRampPalette(c("blue", "white", "red"))(paletteLength)
-    # length(breaks) == length(paletteLength) + 1
-    # use floor and ceiling to deal with even/odd length pallettelengths
-    myBreaks <- c(seq(min(Significant_proteins, na.rm = T), 0, length.out=ceiling(paletteLength/2) + 1), 
-                  seq(max(Significant_proteins, na.rm = T)/paletteLength, max(Significant_proteins, na.rm = T), length.out=floor(paletteLength/2)))
-    
-    png(here::here(output_folder,glue::glue("Heatmap_Significant ",dataset_name,".pdf")), width = 2500, height = 3800,res  =300) 
-    pheatmap::pheatmap(Significant_proteins[,experimental_design_DDA$label %>% sort()],cluster_cols = F,fontsize_row = 6, clustering_distance_rows = "euclidean", cluster_rows = T,
-                       # scale = "row",
-                       main = glue::glue(dataset_name, " \nSignificant Proteins Normalised - imputted"),color=myColor, breaks=myBreaks)
-    dev.off()
-    # if(names(dev.cur()) != "null device"){dev.off()}
-    #clusters <- NbClust::NbClust(Significant_proteins, method = "kmeans")$Best.partition
     
     Comparisons_list <- list()
     for(i in (dep@elementMetadata %>% names() %>% str_subset("diff") )){
@@ -228,23 +121,32 @@ input_matrix =MS_data %>% as.data.frame()
             subset(Uniprot %in% non_missing_in_all_comparison) %>% 
             
             mutate(Imputted_comparison = Uniprot %in% Imputted,
+                
                    Single_Uniprot = Uniprot %>% str_remove_all(";[:graph:]*$") %>% str_remove_all("-[:graph:]*$")) %>% 
             # left_join(Metabolic_proteins, by  = c("Single_Uniprot" = "Uniprot") ) %>% 
             # dplyr::rename(Metabolic_library = Behaviour) %>% 
             # left_join(Interesting_proteins, by = c("Single_Uniprot" = "Uniprot")) %>% 
             left_join(HUMAN_9606 %>% subset(Type == "Gene_Name") %>% dplyr::select(-Type), by  = c("Single_Uniprot" = "Uniprot")) #%>% 
         # mutate(Metabolic_library = if_else(is.na(Metabolic_library),"Non-Metabolic", Metabolic_library))
-        volcano_df %>% ggplot(aes(x = log2_FC, y = -log10(p.val), label = ID, colour = log2_FC, alpha = significant))+
-            geom_point()+
-            geom_point(data = . %>% subset(Imputted_comparison == T), colour = "grey50")+
-            ggrepel::geom_label_repel(data = . %>% subset(significant == T))+
-            annotate("text", x = c(-0.5,0.5), y=0, label = rev(conditions))+
+       qval =  qvalue::qvalue(volcano_df$p.val)
+       volcano_df$qvalue = qval$qvalues
+       GTP_enzymes = c('IMPDH1','GMPS','GUK1','^NME')
+       volcano_df$significant = if_else(volcano_df$qvalue<0.01,T,F)
+        volcano_df %>% ggplot(aes(x = log2_FC, y = -log10(p.val), label = ID))+
+            geom_point(data = . %>% subset(significant == T), alpha = 0.9, colour = 'grey20')+
+            geom_point(data = . %>% subset(significant == F), alpha = 0.4, colour = 'grey70')+
+            geom_point(data = . %>% subset(Uniprot == 'P12268'), colour = "red")+
+            ggrepel::geom_label_repel(data = . %>% subset(significant == T & abs(log2_FC)>8))+
+            ggrepel::geom_label_repel(data = . %>% subset(Uniprot == 'P12268'), colour = "red")+
+            ggrepel::geom_label_repel(data = . %>% subset(str_detect(ID,paste0(GTP_enzymes,collapse = '|'))),alpha = 0.8)+
+            theme_bw()+
+            annotate("text", x = c(-2,2), y=0, label = str_remove_all(rev(conditions),'Abundance_'))+
             
             ggtitle(glue::glue("Diff Present", contrast),
                     subtitle = dataset_name)
         ggsave(here::here(output_folder,glue::glue("Protein_volcano_significant",dataset_name," ",contrast,".pdf")), width = 10, height = 15)
         
-        Comparisons_list[[i]] <- volcano_df
+        # Comparisons_list[[i]] <- volcano_df
         
         
         # ego2 <- gseGO(geneList     = dep@elementMetadata %>% .[i] %>% unlist %>% set_names(dep@elementMetadata$name) %>% sort(decreasing = T) ,
@@ -304,6 +206,84 @@ input_matrix =MS_data %>% as.data.frame()
         # 
         # 
     }
+regression_dt = data.table()
+   for(i in rownames( data_imp@assays@data@listData[[1]])){
+   regression_proteins = data_imp@assays@data@listData[[1]][i,] |> enframe() |> 
+        mutate(
+            cell_line = str_remove_all(name,'Abundance_') |> str_remove_all('_.$'),
+            level = case_when(
+                cell_line=='231'~5,
+                cell_line=='BT474'~3,
+                cell_line=='SKBR3'~4,
+                cell_line=='MCF7'~1,
+                cell_line=='T47D'~2,
+                TRUE~20
+                
+        ))
+    
+    # create linear model
+    linear_model <- lm( value ~level, regression_proteins)
+    
+    # print summary of linear model
+    summary_dt = summary(linear_model)
+    regression_dt_tmp = data.table(Uniprot =i ,
+                                   pvalue = summary_dt$coefficients[2,4],
+                                       Estimate =linear_model$coefficients[2] )
+    regression_dt = rbind(regression_dt,regression_dt_tmp)
+   }
+regression_dt |> ggplot(aes(x = Estimate, y = -log10(pvalue),label = Uniprot))+
+    geom_point()+
+    ggrepel::geom_text_repel(data = regression_dt[Uniprot =='P12268',])+
+    ggtitle('Correlation with Aggressiveness across all samples')
+ggsave(here::here(output_folder,glue::glue("Linear regression aggressiveness ",dataset_name,".pdf")), width = 20, height = 20)
+
+    Significant_proteins <- data_imp@assays@data@listData[[1]] %>%
+        as.data.frame() %>%
+        rownames_to_column("ProteinGroup") |> 
+        mutate(Uniprot= ProteinGroup %>% str_remove_all(";[:graph:]*$") %>% str_remove_all("-[:graph:]*$")) %>%
+        left_join(HUMAN_9606 %>% subset(Type == "Gene_Name") %>% dplyr::select(-Type) %>% subset(!duplicated(Uniprot))) %>%
+        subset(ID %in% c('IMPDH2','MTHFD1','CAD','UMPS','IMPDH1','DHODH','ATIC','APRT','GMPS','PAICS','HPRT1','PRPS2') ) |> 
+        tidyr::pivot_longer(contains("_"), names_to = "Condition", values_to = "Abundance") %>%
+        mutate(Condition = str_remove_all(Condition,"_.$")) %>%
+        ungroup() %>%
+          group_by(ProteinGroup,Condition,ID) %>%
+        dplyr::summarise(Mean_Abundance = mean(Abundance, na.rm = T)) %>%
+        tidyr::pivot_wider(names_from = "Condition",values_from = "Mean_Abundance") %>%
+
+        #mutate(duplicated = BiocGenerics::duplicated(Uniprot))
+        ungroup %>%
+        subset(!is.na(ID)) %>%
+        mutate(ID = if_else(duplicated(ID),paste0(ID,"_1"),ID)) %>%
+        mutate(ID = if_else(duplicated(ID),paste0(ID,"_1"),ID)) %>%
+        mutate(ID = if_else(duplicated(ID),paste0(ID,"_1"),ID)) %>%
+
+
+        column_to_rownames("ID") %>%
+        dplyr::select(where(is.numeric)) %>%
+        mutate(Rowmean = rowMeans(.),
+               across(where(is.numeric),~.x- Rowmean)) %>%
+        dplyr::select(-Rowmean) %>%
+        as.matrix()
+    paletteLength <- 30
+    myColor <- colorRampPalette(c("grey90",'white', "#642669"))(paletteLength)
+    # length(breaks) == length(paletteLength) + 1
+    # use floor and ceiling to deal with even/odd length pallettelengths
+    myBreaks <- c(seq(min(Significant_proteins, na.rm = T), 0, length.out=ceiling(paletteLength/2) + 1),
+                  seq(max(Significant_proteins, na.rm = T)/paletteLength, max(Significant_proteins, na.rm = T), length.out=floor(paletteLength/2)))
+
+    pdf(here::here(output_folder,glue::glue("Heatmap_Significant ",dataset_name,".pdf")), width = 7, height = 14)
+    pheatmap::pheatmap(Significant_proteins[c('MTHFD1','IMPDH2','PRPS2','HPRT1','PAICS','GMPS','ATIC','APRT','IMPDH1','DHODH','CAD','UMPS'),
+                                            c('Abundance_MCF7','Abundance_T47D','Abundance_BT474','Abundance_SKBR3','Abundance_231')],
+                       cluster_cols = F,fontsize_row = 6, clustering_distance_rows = "euclidean", cluster_rows = F,
+                       # scale = "row",
+                       
+                       main = glue::glue(dataset_name, " \nSignificant Proteins Normalised - imputted"),color=myColor, breaks=myBreaks)
+    dev.off()
+    # if(names(dev.cur()) != "null device"){dev.off()}
+    #clusters <- NbClust::NbClust(Significant_proteins, method = "kmeans")$Best.partition
+    
+    
+    
     purrr::imap(.x = Comparisons_list, ~.x  %>% select(Uniprot, log2_FC, significant,ID) %>% rename(
         "{.y}_FC" := log2_FC,
         "{.y}_significant" := significant)) %>% 
@@ -341,37 +321,7 @@ input_matrix =MS_data %>% as.data.frame()
         ggtitle("Coefficient of Variation in Conditions NAs in Sd retained",
                 subtitle =  dataset_name)
     ggsave(here::here(output_folder,glue::glue("CV_conditions_unimputted",dataset_name," ",contrast,".pdf")), width = 10, height = 15)
-    # replicates <- experimental_design_DDA %>% group_by(condition) %>% sample_n(2) %>% ungroup() %>% pull(label,condition)
-    # input_df <- data_norm@assays@data@listData[[1]] %>% as.data.frame() %>%  rownames_to_column("Uniprot")
-    # named_vector = replicates[1:2]
-    # rep_1 = named_vector[1]
-    # rep_2 = named_vector[2]
-    # MA_replicates(rep_1,rep_2,input_df)
-    # 
-    # MA_replicates <-  function(named_vector,named_vector_2,input_df){
-    #     print(named_vector)
-    #     print(named_vector_2)
-    #     
-    #     input_df %>% mutate(
-    #        "{unique(names(named_vector))}" :=  diff({{named_vector}},{{named_vector_2}}))
-    # }
-    # 
-    # data_norm@assays@data@listData[[1]] %>% as.data.frame() %>%  rownames_to_column("Uniprot") %>% 
-    #     na.omit() %>% 
-    #     mutate()
-    #     #glimpse() %>% 
-    #     pivot_longer(-Uniprot,names_to = "Condition", values_to = "Abundance") %>% 
-    #     mutate(Condition = str_remove_all(Condition, "_.$")) %>% 
-    #     group_by(Condition,Uniprot) %>% 
-    #     summarise(Mean_Abundance = mean(Abundance, na.rm = T),
-    #               Protein_CV = sd(Abundance, na.rm = F)/Mean_Abundance) %>% 
-    #     ggplot(aes(x = Mean_Abundance, y = Protein_CV))+
-    #     geom_point()+
-    #     facet_wrap("Condition")+
-    #     ggtitle("Coefficient of Variation in Conditions NAs in Sd retained",
-    #             subtitle =  dataset_name)
-    # ggsave(here::here(output_folder,glue::glue("CV_conditions_imputted",dataset_name," ",contrast,".pdf")), width = 10, height = 15)
-    # 
+ 
     data_matrices <- list(Imputted = data_imp@assays@data@listData[[1]],
                           Unimputted = data_norm@assays@data@listData[[1]], 
                           DEPs = set_names(Comparisons_list, dep@elementMetadata %>% names() %>% str_subset("diff")))
@@ -379,4 +329,107 @@ input_matrix =MS_data %>% as.data.frame()
     write.xlsx(data_matrices[[3]], here::here("Datasets","Processed",glue::glue(dataset_name, "volcano_DFs.xlsx")), overwrite = T)
     
     return(data_matrices)
-}
+    
+# Making proteomic ruler
+Uniprot_length_Mass <- here::here("Datasets","Raw", "Uniprot_Molecular_sizes.tab") %>% 
+    readr::read_tsv() %>% 
+    dplyr::select(-`Entry name`) %>% 
+    purrr::set_names(c("Uniprot","Length","Mass")) %>% 
+    mutate(Mass = Mass/1000)
+chromatome_Abudances = openxlsx::read.xlsx(here::here('Datasets','Raw','MS protein ungrouped mean values.xlsx')) |> 
+    dplyr::select(Accession,matches('^Abundance:\\.')) |> as.data.frame() |> column_to_rownames('Accession') |> 
+    dplyr::select(matches('47|MCF7|231')) |> 
+    rowMeans() |> enframe(name = 'Accession',value = 'Chromat_breast')
+HUMAN_9606 <- readr::read_tsv(here::here("Datasets","Raw", "HUMAN_9606_idmapping.dat"),
+                       col_names = FALSE) %>% purrr::set_names(c("Uniprot","Type","ID"))
+Proteomic_Ruler <- here::here("Datasets","Processed","CCLE_prot_Ruler.txt") %>% read.delim() %>% .[-1,] %>% 
+    dplyr::select(matches("Copy|Uniprot_Acc|accuracy"))%>% 
+    remove_rownames() %>% 
+    column_to_rownames("Uniprot_Acc") %>% 
+    #mutate(across(where(is.numeric), as.numeric)) %>% 
+    purrr::set_names(.,str_remove_all(names(.),"Copy\\.number\\.")) %>% 
+    mutate(across(contains("_"),~log2(as.numeric(.x))),
+           across(where(is.numeric), ~if_else(is.infinite(.x), NaN,.x))) %>% 
+    # subset(!is.nan(U2OS_BONE)) %>% 
+    # subset(.,rowSums(is.na(.))<(ncol(.)/3)) %>%
+    subset(Absolute.quantification.accuracy != "low") %>%
+    dplyr::select(-Absolute.quantification.accuracy) %>%
+    janitor::clean_names()
+
+    MS_data_counts = openxlsx::read.xlsx(here::here('Datasets','Raw','MS protein ungrouped mean values.xlsx')) |> 
+        dplyr::select(Accession,matches('Peptides')) |> dplyr::select(-matches('Mascot')) 
+    
+    # MS_data_counts$condition = 'breast_chrom'
+    MS_data_counts$Uniprot =MS_data_counts$Accession |> str_remove_all(';[:print:]*$')
+    MS_data_counts = inner_join(MS_data_counts,Uniprot_length_Mass)
+    MS_data_counts = inner_join(MS_data_counts,chromatome_Abudances)
+    colnames(MS_data_counts) = c('protein_group','Total_pept','Unique_razor_pept','Uniprot','Length','Mass','Chromatome')
+    MS_data_counts = MS_data_counts[,c(1,7,3,2,4,5,6)]
+    readr::write_tsv(MS_data_counts,here::here("Datasets","Processed",glue::glue("For_Proteomic_ruler_",dataset_name,".txt")))
+    
+
+    input_matrix <- here::here("Datasets","Processed",'From_proteomic_ruler.txt') %>% 
+        read.delim() %>% .[-1,] %>% 
+        janitor::clean_names() %>% 
+        subset(absolute_quantification_accuracy != "low") %>% 
+        remove_rownames() %>% 
+        dplyr::select(protein_group, contains("copy")) %>% as.data.frame() %>% 
+        column_to_rownames("protein_group") %>%
+        mutate(across(everything(), ~as.numeric(.x))) %>% 
+        purrr::set_names(.,str_remove_all(colnames(.),"copy_number_")) %>% 
+        mutate(across(where(is.numeric),~log2(as.numeric(.x))),
+               across(where(is.numeric), ~if_else(is.infinite(.x), NaN,.x))) %>% 
+        as.matrix() %>% 
+        proDA::median_normalization()
+    Breast_WCE = Proteomic_Ruler |> dplyr::select(matches('mcf7|t47d|skbr3|bt474|mdamb231')) |> 
+        as.matrix() |> rowMeans() |> enframe(name = 'Uniprot',value = 'WCE_breast')
+comparison_ruler = input_matrix |> as.data.frame()|> rownames_to_column('Uniprot') |> 
+    inner_join(Breast_WCE)
+comparison_ruler$chromatome= comparison_ruler$chromatome |> scale() %>% .[,1]
+comparison_ruler$WCE_breast= comparison_ruler$WCE_breast |> scale()%>% .[,1]
+comparison_ruler$Enrichment = comparison_ruler$chromatome-comparison_ruler$WCE_breast
+Hyperlopit_2018 |> group_by(svm)
+left_join(comparison_ruler,Hyperlopit_2018) |> 
+    subset(`final.assignment`!='unknown') |> 
+    # subset(!is.na(markers) & markers!='unknown') |> 
+    ggplot(aes(x= `final.assignment`, y = Enrichment))+
+    geom_boxplot()+
+    theme_bw()+
+    ggtitle('Relative enrichment of proteins in T47D MCF7 and MDAMB231 Samples')
+ggsave(here::here(output_folder,glue::glue("Chromatin enrichment ",dataset_name,".pdf")))
+library(clusterProfiler)
+ego3 <- gseGO(geneList     = comparison_ruler |> pull(Enrichment,Uniprot) |> sort(decreasing = T),
+              OrgDb        = org.Hs.eg.db,
+              ont          = "CC",
+              minGSSize    = 100,
+              maxGSSize    = 500,
+              pvalueCutoff = 0.05,
+              keyType = 'UNIPROT',
+              verbose      = FALSE)
+ridgeplot(ego3)+ggtitle('GO CC Enrichment of proteomic-ruler chrom-vs-WCE')
+ggsave(here::here(output_folder,glue::glue("Chromatin enrichment GOCC ",dataset_name,".pdf")))
+
+# essentiality
+sample_info <-  read.csv(fs::path_rel(here::here("Datasets",'Raw',"sample_info.csv")), stringsAsFactors = FALSE)
+
+Achilles_file <- fs::path_rel(here::here("Datasets",'Raw',"Achilles_gene_effect.csv")) #Raw from https://depmap.org/portal/download/ 2/11/2020
+Achilles <- inner_join(sample_info[,1:2],read.csv(Achilles_file), by = "DepMap_ID")[,-1] %>%
+    column_to_rownames(var = "stripped_cell_line_name") %>% t() %>%
+    magrittr::set_rownames(str_match(rownames(.), "^([:graph:]*?)\\.")[,2])
+breast = sample_info |> subset(lineage == 'breast') |> dplyr::select(stripped_cell_line_name,lineage_molecular_subtype,lineage_sub_subtype,lineage_subtype )
+GTP_enzymes = c('IMPDH1','IMPDH2','GMPS','GUK1','^NME')
+Achilles_GTP = Achilles[str_detect(rownames(Achilles),paste(GTP_enzymes,collapse = '|')),] |> as.data.frame() |> 
+    dplyr::select(any_of(breast$stripped_cell_line_name)) |> rownames_to_column('Gene') |> 
+    tidyr::pivot_longer(-Gene,names_to = 'stripped_cell_line_name', values_to = 'Essentiality')
+Achilles_GTP=Achilles_GTP |> inner_join(breast) |> 
+    mutate(TBNC  = if_else(lineage_sub_subtype == 'ERneg_HER2neg','TNBC','non-TNBC')) 
+    ggplot(Achilles_GTP,aes(colour = TBNC, y= Essentiality, x = TBNC))+
+    
+    geom_boxplot()+
+    geom_jitter(alpha = 0.5, height = 0)+
+    facet_wrap('Gene', scales = 'free_x')+
+    ggtitle('Pattern of Essentiality of GTP-synthesis Genes ERneg_HER2neg vs nonERneg_HER2neg',
+            subtitle = 'none of them are significant')+
+    theme_bw()
+ggsave(here::here(output_folder,glue::glue("GTP synthesis essentiality ",dataset_name,".pdf")))
+
