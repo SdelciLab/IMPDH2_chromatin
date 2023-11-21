@@ -3,6 +3,7 @@ library(here);library(data.table);library(dplyr);library('bayesbio')
 library("pRolocdata");library(stringr);library(tibble);library(DEP);library(ggplot2)
 output_folder = here::here('Output')
 Hyperlopit_2018 = readr::read_tsv(here::here("Datasets","Processed","annot_hyperlopit.tsv"))
+metabolic = openxlsx::read.xlsx(here::here('Datasets','Raw','metabolism_gene_list_Sabatini.xlsx')) |> unlist()
 MS_data = openxlsx::read.xlsx(here::here('Datasets','Raw','MS protein ungrouped mean values.xlsx')) |> 
     dplyr::select(Accession,matches('^Abundance:\\.')) |> tibble::column_to_rownames('Accession') |> as.matrix()
 names_MS_data = MS_data |> 
@@ -40,6 +41,7 @@ input_matrix =MS_data %>% as.data.frame()
     plot_coverage(data_filt)
     ggsave(here::here(output_folder,glue::glue("plot_coverage ",dataset_name,".pdf")))
     data_filt@assays@data@listData[[1]][is.nan(data_filt@assays@data@listData[[1]])] <- NA 
+    dev.off()
     pdf(here::here(output_folder,glue::glue("Protein_Missingness ",dataset_name,".pdf")), width = 10, height = 10) 
     plot_missval(data_filt)
     dev.off()
@@ -63,7 +65,7 @@ input_matrix =MS_data %>% as.data.frame()
         plot_detect(data_norm)
         dev.off()
         #ggsave(here::here(output_folder,glue::glue("Protein_missingness ",dataset_name,".pdf")))
-        data_imp <- DEP::impute(data_norm, fun = "MinProb", q = 0.01)
+        data_imp <- DEP::impute(data_norm, fun = "MinProb", q = 0.1)
         multiple_imputation <-  imp4p::impute.mi(tab = data_norm@assays@data@listData[[1]],#methodMNAR = "impute.pa",
                                               conditions = experimental_design_DDA$condition %>% as.factor(),
                                               repbio = experimental_design_DDA$replicate %>% as.factor())
@@ -95,10 +97,12 @@ input_matrix =MS_data %>% as.data.frame()
         theme(plot.title = element_text(size = 20))
     ggsave(here::here(output_folder,glue::glue(dataset_name," PCA.pdf")))
     data_diff_all_contrasts <- DEP::test_diff(data_imp, "control", "Abundance_231")
-    dep <- add_rejections(data_diff_all_contrasts, alpha = 0.05, lfc = 1)
-    
- 
-    
+    dep <- add_rejections(data_diff_all_contrasts, alpha = 0.05, lfc = 0.5)
+nucleotide_pathways = fread(here::here('Datasets','Raw','hsa_pathways.txt')) |> 
+    subset(str_detect(Path_description, 'Purine')) |> pull(Path_id)
+nucleotide_genes = fread(here::here('Datasets','Raw','KEGG_genes.csv')) |> 
+    subset(pathway %in%nucleotide_pathways ) |> pull(ID)
+
     Comparisons_list <- list()
     for(i in (dep@elementMetadata %>% names() %>% str_subset("diff") )){
         n_accepted_NA_per_condition = 2
@@ -131,22 +135,42 @@ input_matrix =MS_data %>% as.data.frame()
        qval =  qvalue::qvalue(volcano_df$p.val)
        volcano_df$qvalue = qval$qvalues
        GTP_enzymes = c('IMPDH1','GMPS','GUK1','^NME')
-       volcano_df$significant = if_else(volcano_df$qvalue<0.01,T,F)
-        volcano_df %>% ggplot(aes(x = log2_FC, y = -log10(p.val), label = ID))+
-            geom_point(data = . %>% subset(significant == T), alpha = 0.9, colour = 'grey20')+
-            geom_point(data = . %>% subset(significant == F), alpha = 0.4, colour = 'grey70')+
-            geom_point(data = . %>% subset(Uniprot == 'P12268'), colour = "red")+
-            ggrepel::geom_label_repel(data = . %>% subset(significant == T & abs(log2_FC)>8))+
-            ggrepel::geom_label_repel(data = . %>% subset(Uniprot == 'P12268'), colour = "red")+
-            ggrepel::geom_label_repel(data = . %>% subset(str_detect(ID,paste0(GTP_enzymes,collapse = '|'))),alpha = 0.8)+
-            theme_bw()+
-            annotate("text", x = c(-2,2), y=0, label = str_remove_all(rev(conditions),'Abundance_'))+
+       volcano_df$significant = if_else(volcano_df$qvalue<0.05 & abs(volcano_df$log2_FC)>1,T,F)
+       volcano_df= volcano_df |> mutate(
+           category = case_when(
+              ID =='IMPDH2' ~'IMPDH2',
+             ID %in% nucleotide_genes ~ 'purine',
+             ID %in% metabolic ~ 'metabolic',
+             TRUE~'other'
+           )
+       )
+       quantile_log2 = volcano_df |> 
+           subset(Imputted_comparison==F) |> pull(log2_FC) |> abs() |> quantile() 
+        volcano_df |> 
+            subset(Imputted_comparison==F | ID == 'IMPDH2') %>% ggplot(aes(x = -log2_FC, y = -log10(p.val), 
+                                                                           label = ID, fill = category))+
+            geom_point(data = . %>% subset(significant == T & category == 'other'), alpha = 0.7, size = 3.9, shape =21, stroke=0, colour = 'grey50')+
+            geom_point(data = . %>% subset(significant == F & category == 'other'), alpha = 0.2, size = 2.4, shape =21, stroke = 0, colour = 'grey50')+
+            geom_point(data = . %>% subset(significant == T & category != 'other'), alpha = 0.7, size = 4, stroke =1, shape =21, colour = 'black')+
+            geom_point(data = . %>% subset(significant == F & category != 'other'), alpha = 0.2, size = 2.5, stroke =1, shape =21, colour = 'black')+
+            
+            # geom_point(data = . %>% subset(category != 'other'), alpha = 0.2, size = 2.5, shape =21, colour = 'black')+
+            geom_point(data = . %>% subset(significant == T & Uniprot == 'P12268'), shape =21,  stroke =1.5,size = 4, colour = 'black')+
+            geom_point(data = . %>% subset(significant == F & Uniprot == 'P12268'), shape =21, stroke =1.5, size = 2.5, colour = 'black')+
+            ggrepel::geom_text_repel(data = . %>% subset(significant == T & abs(log2_FC)>quantile_log2[4]))+
+            ggrepel::geom_text_repel(data = . %>% subset(Uniprot == 'P12268'))+
+            # ggrepel::geom_label_repel(data = . %>% subset(str_detect(ID,paste0(GTP_enzymes,collapse = '|'))),alpha = 0.8)+
+            theme_bw()+scale_fill_manual(values = c('IMPDH2' = '#B8223A',
+                                                      'purine' = '#EF633B',
+                                                      'metabolic' = '#F7C736',
+                                                      'other' = 'grey50'))+
+            annotate("text", x = c(-2,2), y=0, label = str_remove_all(conditions,'Abundance_'))+
             
             ggtitle(glue::glue("Diff Present", contrast),
                     subtitle = dataset_name)
-        ggsave(here::here(output_folder,glue::glue("Protein_volcano_significant",dataset_name," ",contrast,".pdf")), width = 10, height = 15)
+        ggsave(here::here(output_folder,glue::glue("Protein_volcano_significant",dataset_name," ",contrast,".pdf")), width = 7, height = 6)
         
-        # Comparisons_list[[i]] <- volcano_df
+        Comparisons_list[[i]] <- volcano_df
         
         
         # ego2 <- gseGO(geneList     = dep@elementMetadata %>% .[i] %>% unlist %>% set_names(dep@elementMetadata$name) %>% sort(decreasing = T) ,
@@ -206,8 +230,20 @@ input_matrix =MS_data %>% as.data.frame()
         # 
         # 
     }
-regression_dt = data.table()
-   for(i in rownames( data_imp@assays@data@listData[[1]])){
+    names(Comparisons_list) <- names(Comparisons_list) |> str_remove_all('Abundance')
+    openxlsx::write.xlsx(Comparisons_list,here::here('Datasets','Processed','Cell_line_comparison.xlsx'))
+    
+    listInput = list()
+    for(i in names(Comparisons_list)){
+        listInput[[i]]= Comparisons_list[[i]] |>
+            subset(significant==T & Imputted_comparison==F) |> pull(ID)
+
+    }
+    number_significant = listInput |> unlist() |> table()
+    upset(fromList(listInput), order.by = "freq")
+
+regression_dt <-  data.table()
+ for(i in rownames( data_imp@assays@data@listData[[1]])){
    regression_proteins = data_imp@assays@data@listData[[1]][i,] |> enframe() |> 
         mutate(
             cell_line = str_remove_all(name,'Abundance_') |> str_remove_all('_.$'),
@@ -230,12 +266,65 @@ regression_dt = data.table()
                                    pvalue = summary_dt$coefficients[2,4],
                                        Estimate =linear_model$coefficients[2] )
     regression_dt = rbind(regression_dt,regression_dt_tmp)
-   }
-regression_dt |> ggplot(aes(x = Estimate, y = -log10(pvalue),label = Uniprot))+
-    geom_point()+
-    ggrepel::geom_text_repel(data = regression_dt[Uniprot =='P12268',])+
-    ggtitle('Correlation with Aggressiveness across all samples')
-ggsave(here::here(output_folder,glue::glue("Linear regression aggressiveness ",dataset_name,".pdf")), width = 20, height = 20)
+ }
+fwrite(regression_dt,here::here('Datasets','Processed','agressiveness_regression.csv'))
+regression_dt |> 
+    inner_join(HUMAN_9606 |> subset(Type == 'Gene_Name')) |> 
+    mutate(
+        category = case_when(
+            ID =='IMPDH2' ~'IMPDH2',
+            ID %in% nucleotide_genes ~ 'purine',
+            ID %in% metabolic ~ 'metabolic',
+            TRUE~'other'
+        ),
+        padj = p.adjust(pvalue,method = 'BH')) |> 
+    mutate(significant = padj<0.05 & ID %in% names(number_significant[number_significant>1])) |> 
+    ggplot(aes(x = Estimate, y = -log10(pvalue),label = ID,fill = category))+
+    geom_point(data = . %>% subset(significant == T & category == 'other'), alpha = 0.7, size = 3.9, shape =21, stroke=0, colour = 'grey50')+
+    geom_point(data = . %>% subset(significant == F & category == 'other'), alpha = 0.2, size = 2.4, shape =21, stroke = 0, colour = 'grey50')+
+    geom_point(data = . %>% subset(significant == T & category != 'other'), alpha = 0.7, size = 4, shape =21, stroke =1.5, colour = 'black')+
+    geom_point(data = . %>% subset(significant == F & category != 'other'), alpha = 0.2, size = 2.5, shape =21,stroke =1.5, colour = 'black')+
+    
+    # geom_point(data = . %>% subset(category != 'other'), alpha = 0.2, size = 2.5, shape =21, colour = 'black')+
+    geom_point(data = . %>% subset(significant == T & Uniprot == 'P12268'), shape =21, size = 4, colour = 'black')+
+    geom_point(data = . %>% subset(significant == F & Uniprot == 'P12268'), shape =21, size = 2.5, colour = 'black')+
+    theme_bw()+scale_fill_manual(values = c('IMPDH2' = '#B8223A',
+                                                           'purine' = '#EF633B',
+                                                           'metabolic' = '#F7C736',
+                                                           'other' = 'grey50'))+
+    ggrepel::geom_text_repel(data = . %>% subset(significant == T ))+
+    # ggrepel::geom_text_repel(data = . %>% subset(Uniprot == 'P12268'))+
+    # ggrepel::geom_text_repel(data = regression_dt[Uniprot =='P12268',])+
+    ggtitle('Correlation with Aggressiveness across all samples',
+            subtitle = 'showing significant proteins (in correlation) which were also significant agaisnt 231 in at least 2 cell lines')
+ggsave(here::here(output_folder,glue::glue("Linear regression aggressiveness ",dataset_name,".pdf")), width = 7, height = 6)
+IMPDH2_etop = readxl::read_xls(here::here('Datasets','Raw','msb202211267-sup-0005-datasetev3.xls'), sheet = 4)
+IMPDH2_etop |> 
+    mutate(
+        category = case_when(
+            ID =='IMPDH2' ~'IMPDH2',
+            ID %in% nucleotide_genes ~ 'purine',
+            ID %in% metabolic ~ 'metabolic',
+            TRUE~'other'
+        )) |> 
+     ggplot(aes(x = -log2_FC, y = -log10(p.val),label = ID,fill = category))+
+    geom_point(data = . %>% subset(significant == T & category == 'other'), alpha = 0.7, size = 3.9, shape =21, stroke=0, colour = 'grey50')+
+    geom_point(data = . %>% subset(significant == F & category == 'other'), alpha = 0.2, size = 2.4, shape =21, stroke = 0, colour = 'grey50')+
+    geom_point(data = . %>% subset(significant == T & category != 'other'), alpha = 0.7, size = 4, shape =21, stroke =1.5, colour = 'black')+
+    geom_point(data = . %>% subset(significant == F & category != 'other'), alpha = 0.2, size = 2.5, shape =21,stroke =1.5, colour = 'black')+
+    
+    # geom_point(data = . %>% subset(category != 'other'), alpha = 0.2, size = 2.5, shape =21, colour = 'black')+
+    geom_point(data = . %>% subset(significant == T & Uniprot == 'P12268'), shape =21, size = 4, colour = 'black')+
+    geom_point(data = . %>% subset(significant == F & Uniprot == 'P12268'), shape =21, size = 2.5, colour = 'black')+
+    theme_bw()+scale_fill_manual(values = c('IMPDH2' = '#B8223A',
+                                            'purine' = '#EF633B',
+                                            'metabolic' = '#F7C736',
+                                            'other' = 'grey50'))+
+    ggrepel::geom_text_repel(data = . %>% subset(significant == T ))+
+    # ggrepel::geom_text_repel(data = . %>% subset(Uniprot == 'P12268'))+
+    # ggrepel::geom_text_repel(data = regression_dt[Uniprot =='P12268',])+
+    ggtitle('Etop no release (left) against Etop 24hr release U2OS DNA damage')
+ggsave(here::here(output_folder,glue::glue("Etop_DNA_damage_IMPDH2.pdf")), width = 7, height = 6)
 
     Significant_proteins <- data_imp@assays@data@listData[[1]] %>%
         as.data.frame() %>%
@@ -327,9 +416,6 @@ ggsave(here::here(output_folder,glue::glue("Linear regression aggressiveness ",d
                           DEPs = set_names(Comparisons_list, dep@elementMetadata %>% names() %>% str_subset("diff")))
     write.xlsx(data_matrices[1:2], here::here("Datasets","Processed",glue::glue(dataset_name, "matrices.xlsx")), overwrite = T,rowNames = T)
     write.xlsx(data_matrices[[3]], here::here("Datasets","Processed",glue::glue(dataset_name, "volcano_DFs.xlsx")), overwrite = T)
-    
-    return(data_matrices)
-    
 # Making proteomic ruler
 Uniprot_length_Mass <- here::here("Datasets","Raw", "Uniprot_Molecular_sizes.tab") %>% 
     readr::read_tsv() %>% 
@@ -432,4 +518,40 @@ Achilles_GTP=Achilles_GTP |> inner_join(breast) |>
             subtitle = 'none of them are significant')+
     theme_bw()
 ggsave(here::here(output_folder,glue::glue("GTP synthesis essentiality ",dataset_name,".pdf")))
+
+# opencell 
+open_cell_interactors = fread(here::here('Datasets','Raw','opencell-protein-interactions.csv')) |> 
+    subset(target_gene_name %in% c('TOP2A','PARP1' )) |> 
+    # inner_join(HUMAN_9606_idmapping |> subset(Type == 'Gene_Name'), by = c('interactor_gene_name' = 'ID') ) |> 
+    mutate(
+        category = case_when(
+            interactor_gene_name =='IMPDH2' ~'IMPDH2',
+            interactor_gene_name %in% nucleotide_genes ~ 'purine',
+            interactor_gene_name %in% metabolic ~ 'metabolic',
+            TRUE~'other'
+        ))
+fwrite(open_cell_interactors,here::here('Datasets','Processed','TOP2_PARP1_opencell_interactors.csv'))
+overlap = open_cell_interactors$interactor_gene_name |> table()
+overlap = overlap[overlap>1] |> names()
+    ggplot(open_cell_interactors,aes(x=enrichment, y = pval,fill = category, label = interactor_gene_name))+
+    geom_point(data = open_cell_interactors |> subset(category=='other'),alpha = 0.4, 
+               shape = 21, colour = 'white', size = 2.5)+
+        geom_point(data = open_cell_interactors |> subset(category!='other'),alpha = 1,
+                   shape = 21, size = 3, colour = 'black')+
+        geom_point(data = open_cell_interactors |> subset(category=='IMPDH2'),alpha = 1,
+                   shape = 21, size = 3, colour = 'black')+
+        # geom_point
+        ggrepel::geom_text_repel(data = open_cell_interactors |> 
+                                     subset(category != 'other'), size = 5,max.overlaps = 100, alpha = 0.3)+
+        ggrepel::geom_text_repel(data = open_cell_interactors |> 
+                                     subset((interactor_gene_name %in% overlap & category != 'other' )|
+                                     enrichment>7.5), size = 5,max.overlaps = 100)+
+      
+    facet_wrap('target_gene_name',scales = 'free_y')+
+    theme_bw()+scale_fill_manual(values = c('IMPDH2' = '#B8223A',
+                                              'purine' = '#EF633B',
+                                              'metabolic' = '#F7C736',
+                                              'other' = 'grey50'))
+    ggsave(here::here(output_folder,glue::glue("opencell_TOP2A_PARP1_other.pdf")), width = 9, height = 8)
+    
 
