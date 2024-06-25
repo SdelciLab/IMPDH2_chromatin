@@ -1,0 +1,115 @@
+﻿Pos,No,Age,Sex,Organ/Anatomic Site,Pathology diagnosis,TNM,Grade,Stage,Type,ER,PR,Ki67,HER2,Class,Ki67_1,Ki67_2_perc
+A1,1,50,F,Breast,Invasive carcinoma of no special type,-,2,-,Malignant,+++,+++,"+,10%",0,ER/PR,+,10.00
+A2,2,54,F,Breast,Invasive carcinoma of no special type,T3N2M0,1,IIIA,Malignant,+,-,"+,15%",3+,HER2,+,15.00
+A3,3,42,F,Breast,Invasive carcinoma of no special type(necrosis),T2N2M0,2,IIIA,Malignant,*,*,*,*,,*,*
+A4,4,40,F,Breast,Invasive carcinoma of no special type,T2N1M0,2,IIB,Malignant,+++,+,"+,5%",0,ER/PR,+,5.00
+A5,5,41,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,+++,+++,"+,10%",0,ER/PR,+,10.00
+A6,6,41,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,+++,+++,"+,2%",0,ER/PR,+,2.00
+A7,7,72,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,+++,-,"+,10%",0,ER/PR,+,10.00
+A8,8,45,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,+++,+++,-,0,ER/PR,-,
+A9,9,41,F,Breast,Invasive carcinoma of no special type,T3N0M0,1,IIB,Malignant,++,+,"+,5%",2+,HER2,+,5.00
+A10,10,43,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,++,+,"+,2%",0,ER/PR,+,2.00
+A11,11,45,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,-,-,"+,10%",2+,HER2,+,10.00
+B1,12,42,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,+++,+++,"+,5%",0,ER/PR,+,5.00
+B2,13,45,F,Breast,Invasive carcinoma of no special type,T2N2M0,2,IIIA,Malignant,-,-,"+,8%",0,TN,+,8.00
+B3,14,38,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,-,-,"+,20%",0,TN,+,20.00
+B4,15,46,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,-,-,"+,10%",0,TN,+,10.00
+B5,16,45,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,-,-,"+,2%",0,TN,+,2.00
+B6,17,45,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,-,-,"+,30%",0,TN,+,30.00
+B7,18,55,F,Breast,Invasive carcinoma of no special type,T2N1M0,1,IIB,Malignant,+,+,"+,5%",2+,HER2,+,5.00
+B8,19,50,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,+++,+,"+,2%",0,ER/PR,+,2.00
+B9,20,63,F,Breast,Invasive carcinoma of no special type,T2N1M0,2,IIB,Malignant,-,-,"+,5%",0,TN,+,5.00
+B10,21,56,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,+++,++,"+,2%",0,ER/PR,+,2.00
+B11,22,50,F,Breast,Invasive carcinoma of no special type,T2N0M0,1,IIA,Malignant,+,+,-,0,ER/PR,-,
+C1,23,40,F,Breast,Invasive carcinoma of no special type,T2N2M0,2,IIIA,Malignant,++,-,"+,15%",0,ER/PR,+,15.00
+C2,24,42,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,-,-,"+,25%",3+,HER2,+,25.00
+C3,25,61,F,Breast,Invasive carcinoma of no special type,T1N0M0,2,IA,Malignant,-,-,-,0,TN,-,
+C4,26,43,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,-,-,"+,30%",0,TN,+,30.00
+C5,27,53,F,Breast,Invasive carcinoma of no special type(sparse),T2N0M0,2,IIA,Malignant,-,-,-,0,TN,-,
+C6,28,41,F,Breast,Invasive carcinoma of no special type,T3N2M0,2,IIIA,Malignant,++,-,"+,2%",0,ER/PR,+,2.00
+C7,29,56,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,+++,+++,"+,15%",3+,HER2,+,15.00
+C8,30,41,F,Breast,Invasive carcinoma of no special type(breast tissue),T2N0M0,1,IIA,Malignant,-,-,"+,2%",1+,HER2,+,2.00
+C9,31,46,F,Breast,Invasive carcinoma of no special type,T2N1M0,1,IIB,Malignant,+++,-,"+,10%",0,ER/PR,+,10.00
+C10,32,33,F,Breast,Invasive carcinoma of no special type,T2N0M0,1,IIA,Malignant,+,*,*,*,,*,*
+C11,33,45,F,Breast,Invasive carcinoma of no special type,T2N1M0,2,IIB,Malignant,-,-,"+,5%",2+,HER2,+,5.00
+D1,34,48,F,Breast,Invasive carcinoma of no special type,T3N0M0,2,IIB,Malignant,+++,+++,"+,1%",0,ER/PR,+,1.00
+D2,35,46,F,Breast,Invasive carcinoma of no special type(breast tissue),T2N0M0,*,IIA,Malignant,-,-,-,0,TN,-,
+D3,36,52,F,Breast,Invasive carcinoma of no special type (sparse),T2N1M0,2,IIB,Malignant,-,-,-,2+,HER2,-,
+D4,37,45,F,Breast,Invasive carcinoma of no special type,T2N2aM0,2,IIIA,Malignant,-,-,"+,2%",2+,HER2,+,2.00
+D5,38,48,F,Breast,Invasive carcinoma of no special type,T2N2M0,2,IIIA,Malignant,+++,+++,"+,5%",0,ER/PR,+,5.00
+D6,39,62,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,+++,+++,"+,15%",0,ER/PR,+,15.00
+D7,40,50,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,++,++,"+,2%",0,ER/PR,+,2.00
+D8,41,44,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,+,-,"+,15%",3+,HER2,+,15.00
+D9,42,41,F,Breast,Invasive carcinoma of no special type with necrosis,T2N0M0,2,IIA,Malignant,-,-,"+,2%",2+,HER2,+,2.00
+D10,43,42,F,Breast,Invasive carcinoma of no special type,T2N1M0,2,IIB,Malignant,+,++,"+,40%",0,ER/PR,+,40.00
+D11,44,42,F,Breast,Invasive carcinoma of no special type,T2N2M0,2,IIIA,Malignant,-,-,"+,15%",3+,HER2,+,15.00
+E1,45,52,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,-,-,"+,2%",0,TN,+,2.00
+E2,46,45,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,+++,+++,"+,5%",2+,HER2,+,5.00
+E3,47,44,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,+++,+++,"+,10%",0,ER/PR,+,10.00
+E4,48,59,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,-,-,"+,15%",0,TN,+,15.00
+E5,49,36,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,+++,+++,"+,15%",0,ER/PR,+,15.00
+E6,50,48,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,-,-,"+,20%",0,TN,+,20.00
+E7,51,42,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,-,-,"+,5%",0,TN,+,5.00
+E8,52,59,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,-,-,"+,2%",3+,HER2,+,2.00
+E9,53,46,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,++,++,"+,5%",0,ER/PR,+,5.00
+E10,54,63,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,+++,+,"+,2%",0,ER/PR,+,2.00
+E11,55,64,F,Breast,Invasive carcinoma of no special type,T2N1M0,2,IIB,Malignant,+++,++,"+,5%",0,ER/PR,+,5.00
+F1,56,43,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,+++,-,"+,15%",0,ER/PR,+,15.00
+F2,57,57,F,Breast,Invasive carcinoma of no special type,T3N1M0,3,IIIA,Malignant,-,-,"+,70%",0,TN,+,70.00
+F3,58,62,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,-,-,-,3+,HER2,-,
+F4,59,48,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,+++,++,"+,2%",0,ER/PR,+,2.00
+F5,60,45,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,-,-,"+,2%",2+,HER2,+,2.00
+F6,61,47,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,+,-,"+,3%",0,ER/PR,+,3.00
+F7,62,50,F,Breast,Invasive carcinoma of no special type,T2N1M0,2,IIB,Malignant,-,-,-,0,TN,-,
+F8,63,48,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,+++,-,"+,5%",0,ER/PR,+,5.00
+F9,64,42,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,-,-,"+,2%",3+,HER2,+,2.00
+F10,65,50,F,Breast,Invasive carcinoma of no special type,T3N1M0,3,IIIA,Malignant,+++,++,"+,10%",0,ER/PR,+,10.00
+F11,66,32,F,Breast,Invasive carcinoma of no special type,T2N1M0,3,IIB,Malignant,++,++,"+,2%",2+,HER2,+,2.00
+G1,67,47,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,+++,+++,"+,10%",0,ER/PR,+,10.00
+G2,68,42,F,Breast,Invasive carcinoma of no special type (sparse),T2N2M0,2,IIIA,Malignant,+,-,"+,2%",0,ER/PR,+,2.00
+G3,69,54,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,-,-,"+,10%",0,TN,+,10.00
+G4,70,56,F,Breast,Invasive carcinoma of no special type (fibrofatty tissue),T3N1M0,*,IIIA,Malignant,*,*,*,*,,*,*
+G5,71,45,F,Breast,Invasive carcinoma of no special type,T2N2M0,2,IIIA,Malignant,+,-,-,0,ER/PR,-,
+G6,72,48,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,-,-,"+,5%",0,TN,+,5.00
+G7,73,50,F,Breast,Invasive carcinoma of no special type,T1N1M0,3,IIA,Malignant,+++,++,"+,1%",0,ER/PR,+,1.00
+G8,74,45,F,Breast,Invasive carcinoma of no special type,T2N3M0,2,IIIC,Malignant,++,-,"+,5%",3+,HER2,+,5.00
+G9,75,42,F,Breast,Invasive carcinoma of no special type,T3N2M0,3,IIIA,Malignant,-,+++,"+,8%",0,ER/PR,+,8.00
+G10,76,36,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,-,-,"+,15%",0,TN,+,15.00
+G11,77,44,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,++,+++,"+,2%",0,ER/PR,+,2.00
+H1,78,47,F,Breast,Invasive carcinoma of no special type,T2N1M0,3,IIB,Malignant,-,-,"+,10%",3+,HER2,+,10.00
+H2,79,50,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,++,++,"+,15%",0,ER/PR,+,15.00
+H3,80,52,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,+,-,"+,5%",3+,HER2,+,5.00
+H4,81,35,F,Breast,Invasive carcinoma of no special type(blank),T2N0M0,*,IIA,Malignant,*,-,*,0,,*,*
+H5,82,30,F,Breast,Invasive carcinoma of no special type,T2N1M0,3,IIB,Malignant,++,-,"+,20%",2+,HER2,+,20.00
+H6,83,46,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,-,-,"+,5%",0,TN,+,5.00
+H7,84,44,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,-,-,"+,15%",1+,HER2,+,15.00
+H8,85,43,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,+++,++,"+,2%",0,ER/PR,+,2.00
+H9,86,48,F,Breast,Invasive carcinoma of no special type,T4N2M0,3,IIIB,Malignant,+++,-,-,0,ER/PR,-,
+H10,87,42,F,Breast,Invasive carcinoma of no special type,T2N1M0,3,IIB,Malignant,+++,-,"+,3%",0,ER/PR,+,3.00
+H11,88,43,F,Breast,Invasive carcinoma of no special type,T1N1M0,3,IIA,Malignant,-,-,"+,20%",0,TN,+,20.00
+I1,89,72,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,-,-,-,0,TN,-,
+I2,90,68,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,+++,-,"+,15%",0,ER/PR,+,15.00
+I3,91,56,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,++,++,"+,5%",0,ER/PR,+,5.00
+I4,92,72,F,Breast,Invasive carcinoma of no special type,T2N1M0,3,IIB,Malignant,-,-,"+,5%",3+,HER2,+,5.00
+I5,93,45,F,Breast,Invasive carcinoma of no special type,T3N0M0,3,IIB,Malignant,++,+++,"+,10%",0,ER/PR,+,10.00
+I6,94,33,F,Breast,Invasive carcinoma of no special type,T3N0M0,3,IIB,Malignant,-,-,-,3+,HER2,-,
+I7,95,62,F,Breast,Invasive carcinoma of no special type,T3N1M0,3,IIIA,Malignant,+++,-,-,0,ER/PR,-,
+I8,96,49,F,Breast,Invasive carcinoma of no special type,T4N0M0,3,IIIB,Malignant,-,-,"+,20%",0,TN,+,20.00
+I9,97,44,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,-,-,"+,60%",0,TN,+,60.00
+I10,98,51,F,Breast,Invasive carcinoma of no special type,T3N2M0,3,IIIA,Malignant,-,-,-,0,TN,-,
+I11,99,45,F,Breast,Invasive carcinoma of no special type,T3M0N0,3,IIB,Malignant,+++,-,"+,15%",0,ER/PR,+,15.00
+J1,100,77,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,+++,+,"+,1%",0,ER/PR,+,1.00
+J2,101,47,F,Breast,carcinoma with medullary features,T2N0M0,-,IIA,Malignant,++,-,"+,20%",0,ER/PR,+,20.00
+J3,102,59,F,Breast,carcinoma with medullary features,T2N0M0,-,IIA,Malignant,-,-,-,0,TN,-,
+J4,103,50,F,Breast,carcinoma with medullary features with necrosis,T2N0M0,-,IIA,Malignant,-,-,*,0,TN,*,*
+J5,104,55,F,Breast,carcinoma with medullary features,T2N1M0,-,IIB,Malignant,-,-,"+,15%",2+,HER2,+,15.00
+J6,105,46,F,Breast,carcinoma with medullary features,T2N0M0,-,IIA,Malignant,-,-,"+,15%",0,TN,+,15.00
+J7,106,46,F,Breast,carcinoma with medullary features,T2N0M0,-,IIA,Malignant,-,-,-,1+,HER2,-,
+J8,107,63,F,Breast,carcinoma with medullary features,T2N0M0,-,IIA,Malignant,-,-,"+,10%",0,TN,+,10.00
+J9,108,38,F,Breast,carcinoma with medullary features,T1N0M0,-,IA,Malignant,+++,+,"+,20%",0,ER/PR,+,20.00
+J10,109,56,F,Breast,carcinoma with medullary features,T2N0M0,-,IIA,Malignant,-,-,-,2+,HER2,-,
+J11,110,42,F,Breast,carcinoma with medullary features,T2N0M0,-,IIA,Malignant,-,-,"+,2%",0,TN,+,2.00
+K1,111,42,F,Breast,Invasive carcinoma of no special type(blank),T2N0M0,2,IIA,Malignant,*,*,*,*,,*,*
+K2,112,48,F,Breast,Invasive carcinoma of no special type,T2N0M0,2,IIA,Malignant,-,-,"+,40%",0,TN,+,40.00
+K3,113,50,F,Breast,Invasive carcinoma of no special type,T2N0M0,3,IIA,Malignant,-,-,"+,5%",0,TN,+,5.00
+K4,114,48,F,Breast,Invasive papillary carcinoma,T2N1M0,-,IIB,Malignant,++,+,"+,10%",0,ER/PR,+,10.00
