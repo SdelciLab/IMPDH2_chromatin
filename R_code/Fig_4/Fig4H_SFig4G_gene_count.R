@@ -6,7 +6,7 @@ library(tidyverse)
 #load the DeSeq data
 load("/Users/alisc/Desktop/CRG/DeSeq R/DDS_file.RData")
 count_data <- counts(dds)
-rld <- rlog(dds, blind = TRUE) #normalize the counts first
+rld <- rlog(dds, blind = F) #normalize the counts first
 rld_counts <- assay(rld)
 
 SIRT6_counts <- rld_counts[rownames(count_data) == "ENSG00000077463", ]
@@ -50,20 +50,20 @@ t_test_KOWT_KONLS <- t.test(konls_data$SIRT6_counts, kowt_data$SIRT6_counts, pai
 t_test_KOWT_KOSIG <- t.test(kosig_data$SIRT6_counts, kowt_data$SIRT6_counts, paired = FALSE)
 t_test_KOWT_KONOG <- t.test(konog_data$SIRT6_counts, kowt_data$SIRT6_counts, paired = FALSE)
 
-
+pdf("/Users/alisc/Desktop/CRG/gene_counts/SIRT6_gene_counts_new.pdf")
 ggplot(SIRT6_counts2_mean, aes(x = condition, y = Mean)) +
   geom_point() +
   geom_errorbar(aes(ymin = Mean - Std, ymax = Mean + Std), width = 0.2) +
   theme_minimal() +
   labs(title = "Mean SIRT6 Counts with Standard Deviation",
-       y = "Mean normalised SIRT6 Counts") + geom_segment(aes(x = 1, xend = 2, y = 10.01, yend =10.01)) + 
-  geom_segment(aes(x = 2, xend = 3, y = 10.015, yend = 10.015)) + geom_segment(aes(x = 2, xend = 4, y = 10.1, yend =10.1)) + 
+       y = "Mean normalised SIRT6 Counts") + geom_segment(aes(x = 1, xend = 2, y = 10.05, yend =10.05)) + 
+  geom_segment(aes(x = 2, xend = 3, y = 10.055, yend = 10.055)) + geom_segment(aes(x = 2, xend = 4, y = 10.1, yend =10.1)) + 
   geom_segment(aes(x = 2, xend = 5, y = 10.2, yend = 10.2)) + 
-  annotate("text", x = 1.5, y = 10.02, label = paste("p =", format(t_test_WT_KOWT$p.value, digits = 2)), size = 3) +
-  annotate("text", x = 2.5, y = 10.025, label = paste("p =", format(t_test_KOWT_KONLS$p.value, digits = 2)), size = 3) +
+  annotate("text", x = 1.5, y = 10.059, label = paste("p =", format(t_test_WT_KOWT$p.value, digits = 2)), size = 3) +
+  annotate("text", x = 2.5, y = 10.065, label = paste("p =", format(t_test_KOWT_KONLS$p.value, digits = 2)), size = 3) +
   annotate("text", x = 3, y = 10.11, label = paste("p =", format(t_test_KOWT_KOSIG$p.value, digits = 2)), size = 3) +  
   annotate("text", x = 4, y = 10.21, label = paste("p =", format(t_test_KOWT_KONOG$p.value, digits = 2)), size = 3)
-
+dev.off()
 
 #nucleoside transporter
 #Check ensemble ID for
@@ -92,3 +92,8 @@ ggplot(SLC29A2, aes(condition, ENSG00000174669, fill=condition )) +
   geom_bar(stat="identity", width = 0.5) + 
   labs(x = "", y = "normalised gene count", title = "SLC29A2") + 
   theme_classic() +  scale_fill_grey() +theme(legend.position = "none")
+
+colnames(SLC29A1)[1] <- "SLC29A1"
+colnames(SLC29A2)[1] <- "SLC29A2"
+nucleoside_transporter <- cbind(SLC29A1, SLC29A2)
+write.csv(nucleoside_transporter, file = "/Users/alisc/Desktop/CRG/nucleoside transporter/nucleoside_transporter.csv")
