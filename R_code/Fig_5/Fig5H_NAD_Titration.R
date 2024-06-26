@@ -7,7 +7,7 @@ library(gridExtra)
 
 # NAD: Zero Mean and Unit Variance Normalization ---------------------------------------------------------------
 # Read in PAR data
-data_par_raw <- read.delim("Data/Objects_Population - Nuclei 2.txt", skip = 9)
+data_par_raw <- read.delim("/Users/alisc/Downloads/IMPDH2/IMPDH2/Data/Objects_Population - Nuclei 2.txt", skip = 9)
 
 data_par <- data_par_raw %>%
   as_tibble() %>% 
@@ -32,7 +32,7 @@ data_par <- data_par_raw %>%
 
 
 # Read in titration data
-data_titration_raw <- read.delim("data/Objects_Population - full nuclei.txt", skip=9)
+data_titration_raw <- read.delim("/Users/alisc/Downloads/IMPDH2/IMPDH2/Data/Objects_Population - full nuclei.txt", skip=9)
 
 data_titration <- data_titration_raw %>%
   as_tibble() %>% 
@@ -135,7 +135,7 @@ p_normalised <- ggplot(normalised_combined_df, aes(x=Cell, y=newIntensity488, fi
   ggtitle("Zero Mean and Unit Variance Normalization")+
   labs(fill='Mean y-value')
 
-# For easier viewership, and no requriement to explain the negative values, you can add a constant - typically equal to the minimum value.
+# For easier viewership, add a constant - typically equal to the minimum value.
 p_normalised_constant <- ggplot(normalised_combined_df, aes(x=Cell, y = newIntensity488 + abs(min(newIntensity488))))+
   geom_boxplot(aes(fill = mean_newIntensity488 + abs(min(newIntensity488))), outlier.shape = NA) +
   scale_fill_viridis_c(direction = 1)+
