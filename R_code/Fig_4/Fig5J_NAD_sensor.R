@@ -88,17 +88,17 @@ data_recon_2h <- data_recon_2h %>%
   )
 
 #exclude cells that are too big
-data_recon_2h_filtered <- data_recon_2h[data_recon_2h$Nuclei.Selected.Selected...nuclear_areainum2n.Area..µm..< 400, ]
-ggplot(data_recon_2h_filtered, aes(Nuclei.Selected.Selected...nuclear_areainum2n.Area..µm..)) + geom_density()
+data_WTKO_3h_filtered <- data_recon_2h[data_recon_2h$Nuclei.Selected.Selected...nuclear_areainum2n.Area..µm..< 400, ]
+ggplot(data_WTKO_3h_filtered, aes(Nuclei.Selected.Selected...nuclear_areainum2n.Area..µm..)) + geom_density()
 
 #integrated hoechst signal
-data_recon_2h_filtered$Hoechst_corrected <- data_recon_2h_filtered$Nuclei.Selected.Selected...Intensity.Nucleus.HOECHST.33342.Mean - data_recon_2h_filtered$Nuclei.Selected.Selected...Intensity.Ring.Region.HOECHST.33342.Mean
+data_WTKO_3h_filtered$Hoechst_corrected <- data_WTKO_3h_filtered$Nuclei.Selected.Selected...Intensity.Nucleus.HOECHST.33342.Mean - data_WTKO_3h_filtered$Nuclei.Selected.Selected...Intensity.Ring.Region.HOECHST.33342.Mean
 
-data_recon_2h_filtered$ratio <- data_recon_2h_filtered$Hoechst_corrected*data_recon_2h_filtered$Nuclei.Selected.Selected...nuclear_areainum2n.Area..µm..
-data_recon_2h_filtered <- data_recon_2h_filtered[data_recon_2h_filtered$ratio<1e+07,]
+data_WTKO_3h_filtered$ratio <- data_WTKO_3h_filtered$Hoechst_corrected*data_WTKO_3h_filtered$Nuclei.Selected.Selected...nuclear_areainum2n.Area..µm..
+data_WTKO_3h_filtered <- data_WTKO_3h_filtered[data_WTKO_3h_filtered$ratio<1e+07,]
 
-data_2h_DMSO <- data_recon_2h_filtered[data_recon_2h_filtered$Treatment == "DMSO",]
-data_2h_Etoposide <- data_recon_2h_filtered[data_recon_2h_filtered$Treatment == "Eto_10uM",]
+data_2h_DMSO <- data_WTKO_3h_filtered[data_WTKO_3h_filtered$Treatment == "DMSO",]
+data_2h_Etoposide <- data_WTKO_3h_filtered[data_WTKO_3h_filtered$Treatment == "Eto_10uM",]
 
 ggplot(data_2h_DMSO, aes(ratio, color=factor(Column))) +geom_density() + facet_wrap(~Cell)
 ggplot(data_2h_Etoposide, aes(ratio, color=factor(Column))) +geom_density() + facet_wrap(~Cell)
@@ -210,7 +210,7 @@ normalised_data_subset_2h_DMSO <- normalised_data_subset_2h_DMSO[normalised_data
 my_comp2 <-  list(c("WT_empty", "KO_empty"),c("KO-WT","KO-NLS"))
 ggplot(normalised_data_subset_2h_DMSO, aes(Cell, Nuclei.Selected.Selected...yfp.mcherry, fill= Cell_cycle)) +  geom_boxplot() + scale_color_brewer(palette="Accent")+ labs(title="DMSO") +theme_classic() 
 
-data_recon_2h_filtered_signal_outlier_removed <- normalised_data_subset_2h_DMSO %>%
+data_WTKO_3h_filtered_signal_outlier_removed <- normalised_data_subset_2h_DMSO %>%
   group_by(Cell, Cell_cycle) %>%
   mutate(median_yfp_mcherry = median(Nuclei.Selected.Selected...yfp.mcherry),
          sd_yfp_mcherry = sd(Nuclei.Selected.Selected...yfp.mcherry)) %>%
@@ -218,8 +218,139 @@ data_recon_2h_filtered_signal_outlier_removed <- normalised_data_subset_2h_DMSO 
   filter(Nuclei.Selected.Selected...yfp.mcherry >= median_yfp_mcherry - 3 * sd_yfp_mcherry &
            Nuclei.Selected.Selected...yfp.mcherry <= median_yfp_mcherry + 3 * sd_yfp_mcherry)
 
-ggplot(data_recon_2h_filtered_signal_outlier_removed, aes(Cell, Nuclei.Selected.Selected...yfp.mcherry, fill= Cell_cycle)) +  geom_boxplot() + scale_fill_brewer(palette="Accent")+ labs(title="DMSO") +theme_classic() 
+ggplot(data_WTKO_3h_filtered_signal_outlier_removed, aes(Cell, Nuclei.Selected.Selected...yfp.mcherry, fill= Cell_cycle)) +  
+  geom_boxplot() + 
+  scale_fill_brewer(palette="Accent")+ 
+  labs(title="DMSO") +
+  theme_classic() 
 
-summary_data <- data_recon_2h_filtered_signal_outlier_removed %>%
+summary_data <- data_WTKO_3h_filtered_signal_outlier_removed %>%
+  group_by(Cell, Cell_cycle) %>%
+  summarize(Count = n(), .groups = 'drop') 
+
+
+#NAD sensor 24h cell cycle WT/KO
+data_WTKO_3h <- read.delim("/Users/alisc/Downloads/sensorWTKO_3h_cellcycle/sensorWTKO_3h_cellcycle/nadsensorWTKO3h-230524__2024-05-23T17_36_01-Measurement 1/Evaluation4/Objects_Population - Nuclei Selected Selected.txt", skip = 9)
+
+data_WTKO_3h <- data_WTKO_3h %>%
+  mutate(Cell = case_when(
+    Row == 2 ~ "WT",
+    Row == 3 ~ "KO",
+    Row == 4 ~ "WT_non-transfected"
+  )
+  )
+data_WTKO_3h <- data_WTKO_3h %>%
+  mutate(Treatment = case_when(
+    Column %in% c(3,4,5) ~ "DMSO",
+    Column %in% c(6,7,8) ~ "Eto_1uM",
+    Column %in% c(9,10,11) ~ "Eto_2.5uM"
+  )
+  )
+#filter nuclear size
+ggplot(data_WTKO_3h, aes(Nuclei.Selected.Selected...nuclear_areainum2n.Area..µm..)) + geom_density()
+data_WTKO_3h_filtered <- data_WTKO_3h[data_WTKO_3h$Nuclei.Selected.Selected...nuclear_areainum2n.Area..µm..< 400, ]
+
+#integrated hoechst signal
+data_WTKO_3h_filtered$Hoechst_corrected <- data_WTKO_3h_filtered$Nuclei.Selected.Selected...Intensity.Nucleus.HOECHST.33342.Mean - data_WTKO_3h_filtered$Nuclei.Selected.Selected...Intensity.Ring.Region.HOECHST.33342.Mean
+
+data_WTKO_3h_filtered$ratio <- data_WTKO_3h_filtered$Hoechst_corrected*data_WTKO_3h_filtered$Nuclei.Selected.Selected...nuclear_areainum2n.Area..µm..
+data_WTKO_3h_filtered <- data_WTKO_3h_filtered[data_WTKO_3h_filtered$ratio<1e+07,]
+
+data_2h_DMSO <- data_WTKO_3h_filtered[data_WTKO_3h_filtered$Treatment == "DMSO",]
+
+ggplot(data_2h_DMSO, aes(ratio, color=factor(Column))) +geom_density() + facet_wrap(~Cell)
+
+b <- ggplot(data_2h_DMSO, aes(ratio, color=Cell)) +geom_density()
+b
+#normalise Wt empty G1 peak
+density_data <- ggplot_build(b)$data[[1]]
+group_levels <- levels(factor(data_2h_DMSO$Cell))
+density_data$Cell <- group_levels[density_data$group]
+
+#check for peak value per condition
+density <- density_data %>%
+  group_by(Cell) %>%
+  mutate(MaxY = max(y)) %>% 
+  filter(y == MaxY) %>% 
+  summarise(x = first(x), MaxY = first(MaxY), .groups = 'drop')
+
+# WT peak x-coordinate
+WT_empty_peak_x <- density$x[density$Cell == "WT"]
+
+# Calculate shifts needed for each condition
+density$shift2 = WT_empty_peak_x - density$x
+
+# Join data with shifts
+normalised_data_G1 <- data_2h_DMSO %>%
+  left_join(density, by = "Cell") %>%
+  mutate(adjusted_value_G1 = ratio + shift2) 
+
+#define gates
+gate1 <- WT_empty_peak_x -450000
+gate2 <- WT_empty_peak_x[1] + 450000
+
+#find G2 peak
+data_WT_empty <- normalised_data_G1 %>%
+  dplyr::filter(Cell %in% c("WT"))
+dens <- density(data_WT_empty$adjusted_value_G1)
+peaks <- findpeaks(dens$y)
+peaks <- as.data.frame(peaks)
+peak_x_values <- dens$x[peaks$V2]
+
+G2peak <- 4436987  
+gate3 <- G2peak -450000
+gate4 <- G2peak + 550000
+
+ggplot(normalised_data_G1, aes(adjusted_value_G1, color=Cell)) + geom_density() +  # Density curve
+  geom_vline(xintercept = WT_empty_peak_x, col = "red", linetype = "dashed") +
+  geom_vline(xintercept = G2peak, col = "red", linetype = "dashed") +
+  geom_vline(xintercept = gate1, col = "blue") +
+  geom_vline(xintercept = gate2, col = "blue") + geom_vline(xintercept = gate3, col = "blue") +
+  geom_vline(xintercept = gate4, col = "blue") + theme_bw()
+
+normalised_data_subset_2h_DMSO <- normalised_data_G1 %>%
+  mutate(Cell_cycle = case_when(
+    adjusted_value_G1 >= gate1 & adjusted_value_G1 <= gate2 ~ "G1",
+    adjusted_value_G1 > gate2 & adjusted_value_G1 < gate3 ~ "S",
+    adjusted_value_G1 >= gate3 & adjusted_value_G1 <= gate4 ~ "G2/M",
+    TRUE ~ "X"
+  ))
+normalised_data_subset_2h_DMSO <- normalised_data_subset_2h_DMSO[normalised_data_subset_2h_DMSO$Cell_cycle != "X",]
+normalised_data_subset_2h_DMSO <- normalised_data_subset_2h_DMSO[normalised_data_subset_2h_DMSO$Cell != "WT_non-transfected",]
+my_comp2 <-  list(c("WT", "KO"))
+
+ggplot(normalised_data_subset_2h_DMSO, aes(Cell, Nuclei.Selected.Selected...yfp.mcherry, fill= Cell)) +  
+  geom_boxplot() + 
+  facet_wrap(~Cell_cycle) + 
+  scale_color_brewer(palette="Accent")+ 
+  labs(title="DMSO") +
+  theme_classic() 
+
+# DF containing data after removing outliers
+normalised_data_subset_DMSO_outlier <- normalised_data_subset_2h_DMSO %>%
+  
+  group_by(Cell, Cell_cycle) %>%
+  mutate(median_yfp_mcherry = median(Nuclei.Selected.Selected...yfp.mcherry),
+         sd_yfp_mcherry = sd(Nuclei.Selected.Selected...yfp.mcherry)) %>%
+  
+  filter(Nuclei.Selected.Selected...yfp.mcherry >= median_yfp_mcherry - (3 * sd_yfp_mcherry) &
+           Nuclei.Selected.Selected...yfp.mcherry <= median_yfp_mcherry + (3 * sd_yfp_mcherry)) %>%
+  ungroup() 
+
+ordered <- c("WT", "KO")
+ordered2 <- c("G1", "S", "G2/M")
+normalised_data_subset_DMSO_outlier$Cell <- factor(normalised_data_subset_DMSO_outlier$Cell, 
+                                                   levels = ordered)
+normalised_data_subset_DMSO_outlier$Cell_cycle <- factor(normalised_data_subset_DMSO_outlier$Cell_cycle, 
+                                                         levels = ordered2)
+pdf("/Users/alisc/Desktop/CRG/final_figures/NAD_sensor_WT_KO_DMSO.pdf")
+ggplot(normalised_data_subset_DMSO_outlier, aes(Cell, Nuclei.Selected.Selected...yfp.mcherry, fill= Cell)) +  
+  geom_boxplot() +  stat_compare_means(method = "wilcox", size = 2, comparisons = my_comp2, tip.length = 0, braket.size = 0.01) +
+  facet_wrap(~Cell_cycle) + 
+  scale_color_brewer(palette="Accent")+ 
+  labs(title="DMSO") +
+  theme_classic() 
+dev.off()
+summary_data <- normalised_data_subset_DMSO_outlier %>%
   group_by(Cell, Cell_cycle) %>%
   summarize(Count = n(), .groups = 'drop') 
