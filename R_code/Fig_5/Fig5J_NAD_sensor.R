@@ -227,6 +227,7 @@ ggplot(data_WTKO_3h_filtered_signal_outlier_removed, aes(Cell, Nuclei.Selected.S
 summary_data <- data_WTKO_3h_filtered_signal_outlier_removed %>%
   group_by(Cell, Cell_cycle) %>%
   summarize(Count = n(), .groups = 'drop') 
+<<<<<<< HEAD:R_code/Fig_4/Fig5J_NAD_sensor.R
 
 
 #NAD sensor 24h cell cycle WT/KO
@@ -354,3 +355,4 @@ dev.off()
 summary_data <- normalised_data_subset_DMSO_outlier %>%
   group_by(Cell, Cell_cycle) %>%
   summarize(Count = n(), .groups = 'drop') 
+
