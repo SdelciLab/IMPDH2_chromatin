@@ -1,0 +1,88 @@
+---
+title: "PAR_analysis"
+author: "Alisa Schmidt"
+date: "08.05.24"
+output:
+  html_document:
+    df_print: paged
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggpubr)
+```
+Compare PAR signal in the nucleus
+row 2 wt-empty
+row 3 ko-empty
+row 4 ko-wt
+row 5 ko-nls
+row 6 wt
+row 7 ko
+
+*load the data*
+```{r}
+data <- read.delim("/Users/alisc/Desktop/CRG/Operetta/PARplate/Objects_Population - Nuclei 2.txt", skip = 9)
+
+data_cond <- data %>%
+    mutate(Cell = case_when(
+        Row == 2 ~ "WT_empty",
+        Row == 3 ~ "KO_empty",
+      Row == 4 ~ "KO-WT",
+        Row == 5 ~ "KO-NLS",
+        Row == 6 ~ "WT",
+      Row == 7 ~ "KO",
+      )
+    )
+```
+
+*Filtering*
+```{r}
+filtered_data_new <- data_cond[data_cond$Nuclei...Nucleus.Area< 250, ]
+ ordered <- c("WT", "KO","WT_empty","KO_empty","KO-WT","KO-NLS")
+filtered_data_new$Cell <- factor(filtered_data_new$Cell, levels = ordered)
+
+table(filtered_data_new$Cell)
+```
+
+*Plot PAR signal intensity nucleus*
+```{r}
+my_comp <- list(c("WT", "KO"), c("WT_empty", "KO_empty"), c("KO-WT", "KO-NLS"))
+
+pdf("/Users/alisc/Desktop/CRG/final_figures/PARplate/PARintensity.pdf")
+ggplot(filtered_data_new, aes(x = Cell, y = Nuclei...Intensity.Nucleus.Alexa.488.Mean, fill = Cell)) +
+ geom_boxplot(width = 0.75, fatten = 2) +
+  labs(x = "", y = "Intensity Mono/Poly ADP-ribose", fill = "") +
+    stat_compare_means(method = "wilcox", size = 2, comparisons = my_comp, tip.length = 0, braket.size = 0.01) +
+  theme_classic() +  scale_fill_brewer(palette="Accent") +
+  theme( legend.position = "none")
+dev.off()
+```
+*Plot PAR signal seperated WT/KO*
+```{r}
+WT_KO <-  filtered_data_new[filtered_data_new$Row %in% c(6,7),]
+recon <- filtered_data_new[filtered_data_new$Row %in% c(2,3,4,5),]
+
+```
+
+```{r}
+my_comp <- list(c("WT", "KO"))
+pdf("/Users/alisc/Desktop/CRG/final_figures/PARplate/PARintensity_WT_KO.pdf")
+ggplot(WT_KO, aes(x = Cell, y = Nuclei...Intensity.Nucleus.Alexa.488.Mean, fill = Cell)) +
+ geom_boxplot(width = 0.75, fatten = 2) +
+  labs(x = "", y = "Intensity Mono/Poly ADP-ribose", fill = "") +
+    stat_compare_means(method = "wilcox", size = 2, comparisons = my_comp, tip.length = 0, braket.size = 0.01) +
+  theme_classic() +  scale_fill_brewer(palette="Accent") +
+  theme( legend.position = "none")
+dev.off()
+```
+```{r}
+my_comp <- list(c("WT_empty", "KO_empty"), c("KO-WT", "KO-NLS"))
+pdf("/Users/alisc/Desktop/CRG/final_figures/PARplate/PARintensity_recon.pdf")
+ggplot(recon, aes(x = Cell, y = Nuclei...Intensity.Nucleus.Alexa.488.Mean, fill = Cell)) +
+ geom_boxplot(width = 0.75, fatten = 2) +
+  labs(x = "", y = "Intensity Mono/Poly ADP-ribose", fill = "") +
+    stat_compare_means(method = "wilcox", size = 2, comparisons = my_comp, tip.length = 0, braket.size = 0.01) +
+  theme_classic() +  scale_fill_brewer(palette="Accent") +
+  theme( legend.position = "none")
+dev.off()
+```
